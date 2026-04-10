@@ -72,9 +72,9 @@ export default function CreateBetPage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-10 sm:px-6 lg:px-10">
-      <div className="mx-auto max-w-4xl">
-        <div className="mb-8 rounded-3xl bg-white p-6 shadow-xl shadow-slate-200/80 ring-1 ring-slate-200">
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-sky-50 px-4 py-10 sm:px-6 lg:px-10">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-8 overflow-hidden rounded-[2rem] bg-white p-6 shadow-[0_30px_80px_-30px_rgba(14,116,144,0.25)] ring-1 ring-slate-200">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm uppercase tracking-[0.35em] text-sky-500">Create Bet</p>
@@ -87,7 +87,7 @@ export default function CreateBetPage() {
           </div>
         </div>
 
-        <div className="rounded-3xl bg-white p-8 shadow-xl shadow-slate-200/80 ring-1 ring-slate-200">
+        <div className="rounded-[2rem] bg-white p-8 shadow-[0_30px_80px_-30px_rgba(14,116,144,0.25)] ring-1 ring-slate-200">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid gap-6 lg:grid-cols-2">
               <label className="block">

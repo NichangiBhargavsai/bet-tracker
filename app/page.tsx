@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 export default function HomePage() {
   const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -20,8 +21,8 @@ export default function HomePage() {
     event.preventDefault();
     setError("");
 
-    if (!name.trim()) {
-      setError("Please enter your name.");
+    if (!name.trim() || !password) {
+      setError("Please enter both name and password.");
       return;
     }
 
@@ -30,7 +31,7 @@ export default function HomePage() {
       const response = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim() }),
+        body: JSON.stringify({ name: name.trim(), password }),
       });
       const data = await response.json();
 
@@ -49,8 +50,8 @@ export default function HomePage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-xl rounded-3xl bg-white p-8 shadow-xl shadow-slate-200/80 ring-1 ring-slate-200">
+    <main className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-sky-50 px-4 py-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-md rounded-[2rem] bg-white p-8 shadow-[0_30px_80px_-30px_rgba(14,116,144,0.35)] ring-1 ring-slate-200">
         <div className="mb-8 text-center">
           <p className="text-sm uppercase tracking-[0.3em] text-sky-500">Bet Tracker</p>
           <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
@@ -63,16 +64,26 @@ export default function HomePage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <label className="block">
-            <span className="text-sm font-medium text-slate-700">Your name</span>
+            <span className="text-sm font-medium text-slate-700">Username</span>
             <input
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="e.g. Alex"
+              placeholder="homeboy or homegurl"
+              className="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
+            />
+          </label>
+          <label className="block">
+            <span className="text-sm font-medium text-slate-700">Password</span>
+            <input
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Enter your password"
               className="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
             />
           </label>
 
-          {error ? <p className="rounded-2xl bg-amber-100 px-4 py-3 text-sm text-amber-900">{error}</p> : null}
+          {error ? <p className="rounded-2xl bg-rose-100 px-4 py-3 text-sm text-rose-900">{error}</p> : null}
 
           <button
             type="submit"
