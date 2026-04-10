@@ -9,9 +9,13 @@ type User = {
   name: string;
 };
 
+const ALLOWED_USERS = ["homeboy", "homegurl"];
+
+function getOpponent(name: string) {
+  return name === "homeboy" ? "homegurl" : "homeboy";
+}
+
 export default function CreateBetPage() {
-  const [personA, setPersonA] = useState("");
-  const [personB, setPersonB] = useState("");
   const [description, setDescription] = useState("");
   const [loserTask, setLoserTask] = useState("");
   const [dateTime, setDateTime] = useState("");
@@ -28,7 +32,14 @@ export default function CreateBetPage() {
       router.replace("/");
       return;
     }
-    setUser(JSON.parse(stored));
+
+    const parsed = JSON.parse(stored) as User;
+    if (!ALLOWED_USERS.includes(parsed.name)) {
+      router.replace("/");
+      return;
+    }
+
+    setUser(parsed);
   }, [router]);
 
   const handleSubmit = async (event: FormEvent) => {
@@ -36,8 +47,13 @@ export default function CreateBetPage() {
     setError("");
     setSuccess("");
 
-    if (!personA.trim() || !personB.trim() || !description.trim() || !loserTask.trim() || !dateTime) {
+    if (!description.trim() || !loserTask.trim() || !dateTime) {
       setError("Please complete every required field before creating the bet.");
+      return;
+    }
+
+    if (!user) {
+      setError("Unable to identify the logged-in user.");
       return;
     }
 
@@ -46,7 +62,13 @@ export default function CreateBetPage() {
       const response = await fetch("/api/bets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ personA, personB, description, loserTask, dateTime, imageUrl }),
+        body: JSON.stringify({
+          creatorName: user.name,
+          description,
+          loserTask,
+          dateTime,
+          imageUrl,
+        }),
       });
 
       const data = await response.json();
@@ -56,9 +78,7 @@ export default function CreateBetPage() {
         return;
       }
 
-      setSuccess("Bet created successfully! You can now accept it or let the other person accept.");
-      setPersonA("");
-      setPersonB("");
+      setSuccess("Bet created successfully! The creator is already accepted, now wait for the other person to confirm.");
       setDescription("");
       setLoserTask("");
       setDateTime("");
@@ -79,7 +99,7 @@ export default function CreateBetPage() {
             <div>
               <p className="text-sm uppercase tracking-[0.35em] text-sky-500">Create Bet</p>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">New friendly bet</h1>
-              <p className="mt-2 text-slate-600">Enter both people, the challenge, and the date. Then both people can accept.</p>
+              <p className="mt-2 text-slate-600">Choose your challenge and share it with the other person. The creator is automatically accepted.</p>
             </div>
             <Link href="/dashboard" className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
               Back to dashboard
@@ -88,28 +108,13 @@ export default function CreateBetPage() {
         </div>
 
         <div className="rounded-[2rem] bg-white p-8 shadow-[0_30px_80px_-30px_rgba(14,116,144,0.25)] ring-1 ring-slate-200">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid gap-6 lg:grid-cols-2">
-              <label className="block">
-                <span className="text-sm font-medium text-slate-700">Person A</span>
-                <input
-                  value={personA}
-                  onChange={(event) => setPersonA(event.target.value)}
-                  placeholder="Enter person A"
-                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
-                />
-              </label>
-              <label className="block">
-                <span className="text-sm font-medium text-slate-700">Person B</span>
-                <input
-                  value={personB}
-                  onChange={(event) => setPersonB(event.target.value)}
-                  placeholder="Enter person B"
-                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
-                />
-              </label>
-            </div>
+          <div className="mb-8 rounded-3xl bg-slate-50 p-6 text-slate-700 shadow-sm">
+            <p className="text-sm uppercase tracking-[0.35em] text-slate-500">Creator</p>
+            <p className="mt-3 text-xl font-semibold text-slate-900">{user?.name || "Loading..."}</p>
+            <p className="mt-2 text-sm text-slate-600">Opponent: {user ? getOpponent(user.name) : "Loading..."}</p>
+          </div>
 
+          <form onSubmit={handleSubmit} className="space-y-6">
             <label className="block">
               <span className="text-sm font-medium text-slate-700">Bet description</span>
               <textarea

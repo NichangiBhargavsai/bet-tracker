@@ -3,19 +3,44 @@ import { NextResponse } from "next/server";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/models/User";
 
+const DEFAULT_USERS = [
+  { name: "homeboy", password: "myenemy23102024" },
+  { name: "homegurl", password: "myenemy23102024" },
+];
+
+async function ensureDefaultUsers() {
+  await connectToDatabase();
+
+  for (const defaultUser of DEFAULT_USERS) {
+    await User.findOneAndUpdate(
+      { name: defaultUser.name },
+      {
+        name: defaultUser.name,
+        password: await bcrypt.hash(defaultUser.password, 10),
+      },
+      { upsert: true, new: true }
+    );
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const name = String(body.name || "").trim();
+    const name = String(body.name || "").trim().toLowerCase();
     const password = String(body.password || "");
 
     if (!name || !password) {
       return NextResponse.json({ error: "Please enter both username and password." }, { status: 400 });
     }
 
-    await connectToDatabase();
-    const user = await User.findOne({ name });
+    const defaultUser = DEFAULT_USERS.find((user) => user.name === name);
+    if (!defaultUser) {
+      return NextResponse.json({ error: "Invalid credentials." }, { status: 401 });
+    }
 
+    await ensureDefaultUsers();
+
+    const user = await User.findOne({ name });
     if (!user || !user.password) {
       return NextResponse.json({ error: "Invalid credentials." }, { status: 401 });
     }

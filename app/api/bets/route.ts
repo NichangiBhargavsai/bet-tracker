@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import connectToDatabase from "@/lib/mongodb";
 import Bet from "@/models/Bet";
 
+const ALLOWED_USERS = ["homeboy", "homegurl"];
+
+function getOpponent(name: string) {
+  return name === "homeboy" ? "homegurl" : "homeboy";
+}
+
 export async function GET() {
   try {
     await connectToDatabase();
@@ -15,19 +21,25 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const personA = String(body.personA || "").trim();
-    const personB = String(body.personB || "").trim();
+    const creatorName = String(body.creatorName || "").trim();
     const description = String(body.description || "").trim();
     const loserTask = String(body.loserTask || "").trim();
     const imageUrl = String(body.imageUrl || "").trim();
     const dateTime = new Date(body.dateTime);
 
-    if (!personA || !personB || !description || !loserTask || Number.isNaN(dateTime.getTime())) {
+    if (!ALLOWED_USERS.includes(creatorName)) {
+      return NextResponse.json({ error: "Invalid creator user." }, { status: 400 });
+    }
+
+    if (!description || !loserTask || Number.isNaN(dateTime.getTime())) {
       return NextResponse.json(
         { error: "All fields except image proof are required." },
         { status: 400 }
       );
     }
+
+    const personA = creatorName;
+    const personB = getOpponent(creatorName);
 
     await connectToDatabase();
     const bet = await Bet.create({
@@ -37,7 +49,7 @@ export async function POST(request: Request) {
       loserTask,
       dateTime,
       imageUrl,
-      acceptedA: false,
+      acceptedA: true,
       acceptedB: false,
     });
 

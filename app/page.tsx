@@ -58,7 +58,7 @@ export default function HomePage() {
             Friendly bet tracking for two people
           </h1>
           <p className="mt-4 text-slate-600">
-            Log in with your name and start creating bets with your friend. Both users must accept before a bet is confirmed.
+            Log in using one of the two fixed users: <strong>homeboy</strong> or <strong>homegurl</strong> with password <strong>myenemy23102024</strong>. Both people must accept each bet before it becomes confirmed.
           </p>
         </div>
 

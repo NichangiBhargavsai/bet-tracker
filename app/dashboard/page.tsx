@@ -130,7 +130,7 @@ export default function DashboardPage() {
             <div>
               <p className="text-sm uppercase tracking-[0.35em] text-sky-100">Bet Tracker</p>
               <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Your friendly bet dashboard</h1>
-              <p className="mt-4 max-w-2xl text-sky-100/90">Only authenticated users can log in and accept bets. Both people must accept before a bet becomes confirmed.</p>
+              <p className="mt-4 max-w-2xl text-sky-100/90">Only authenticated users can log in and accept bets. Both people must accept before a bet is confirmed.</p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-3xl bg-white/10 px-5 py-4 text-slate-100 shadow-lg shadow-slate-900/10 backdrop-blur">
@@ -201,9 +201,9 @@ export default function DashboardPage() {
           <div className="rounded-3xl bg-white p-6 shadow-xl shadow-slate-200/70 ring-1 ring-slate-200">
             <h2 className="text-lg font-semibold text-slate-900">Tips</h2>
             <ul className="mt-4 space-y-3 text-sm text-slate-600">
-              <li className="rounded-2xl bg-slate-50 p-4">Create a bet, then both users accept it to confirm the bet.</li>
+              <li className="rounded-2xl bg-slate-50 p-4">Create a bet, then the opponent accepts it to confirm the bet.</li>
               <li className="rounded-2xl bg-slate-50 p-4">Pending bets are yellow. Confirmed bets are green. Completed bets are blue.</li>
-              <li className="rounded-2xl bg-slate-50 p-4">Use the create bet button to add a new bet card.</li>
+              <li className="rounded-2xl bg-slate-50 p-4">The creator automatically accepts when the bet is placed.</li>
             </ul>
           </div>
         </section>
@@ -231,6 +231,7 @@ export default function DashboardPage() {
                 const userIsPersonB = bet.personB === user?.name;
                 const hasAccepted = (userIsPersonA && bet.acceptedA) || (userIsPersonB && bet.acceptedB);
                 const canAccept = (userIsPersonA || userIsPersonB) && !hasAccepted;
+                const waitingFor = userIsPersonA ? bet.personB : bet.personA;
 
                 return (
                   <article key={bet._id} className="group rounded-[2rem] border border-slate-200 bg-white/95 p-6 shadow-xl shadow-slate-200/60 transition duration-300 hover:-translate-y-1 hover:shadow-slate-300/80">
@@ -242,9 +243,11 @@ export default function DashboardPage() {
                       <span className={`rounded-full px-3 py-1 text-sm font-semibold ${status.color}`}>{status.label}</span>
                     </div>
 
-                    <div className="mt-6 space-y-3 text-sm text-slate-600">
-                      <p><span className="font-semibold text-slate-900">Person A:</span> {bet.personA}</p>
-                      <p><span className="font-semibold text-slate-900">Person B:</span> {bet.personB}</p>
+                    <div className="mt-6 space-y-4 text-sm text-slate-600">
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <p><span className="font-semibold text-slate-900">Person A:</span> {bet.personA}</p>
+                        <p><span className="font-semibold text-slate-900">Person B:</span> {bet.personB}</p>
+                      </div>
                       <p><span className="font-semibold text-slate-900">Date:</span> {new Date(bet.dateTime).toLocaleString()}</p>
                       {bet.imageUrl ? (
                         <div className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-50">
@@ -253,20 +256,24 @@ export default function DashboardPage() {
                       ) : null}
                     </div>
 
-                    <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                        {bet.acceptedA ? "Person A accepted" : "Person A has not accepted"}
-                        <br />
-                        {bet.acceptedB ? "Person B accepted" : "Person B has not accepted"}
-                      </div>
+                    <div className="mt-6 flex flex-col gap-3">
                       {canAccept ? (
                         <button
-                          onClick={() => handleAccept(bet._id, user?.name ?? "")}
-                          className="inline-flex items-center justify-center rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                          type="button"
+                          onClick={() => handleAccept(bet._id, user?.name || "")}
+                          className="inline-flex w-full items-center justify-center rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
                         >
-                          Accept this bet
+                          Confirm this bet
                         </button>
-                      ) : null}
+                      ) : userIsPersonA || userIsPersonB ? (
+                        <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">
+                          {bet.acceptedA && bet.acceptedB
+                            ? "This bet is confirmed."
+                            : `Waiting for ${waitingFor} to confirm.`}
+                        </div>
+                      ) : (
+                        <div className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">Only participants can confirm this bet.</div>
+                      )}
                     </div>
                   </article>
                 );
